@@ -34,9 +34,9 @@ ImageAnalysis imageAnalysis;
 List<VisualFeatureTypes> features;protected override void OnInitialized()
 {
 	memoryStream = new MemoryStream();
-	computerVisionClient = new ComputerVisionClient(new ApiKeyServiceClientCredentials("983e87fb3abc4683b1906b4b72b59966"))
+	computerVisionClient = new ComputerVisionClient(new ApiKeyServiceClientCredentials("*****"))
 		{
-			Endpoint = "https://compvisionmet.cognitiveservices.azure.com/"
+			Endpoint = "https://*****.cognitiveservices.azure.com/"
 		};
 	features = new List<VisualFeatureTypes>()
 		{
