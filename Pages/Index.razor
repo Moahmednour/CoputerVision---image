@@ -1,0 +1,57 @@
+﻿@page "/"
+@using BlazorInputFile
+@using System.IO
+@using Microsoft.Azure.CognitiveServices.Vision.ComputerVision
+@using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models
+@inject Microsoft.Extensions.Configuration.IConfiguration config
+
+<h1>Hello, world!</h1>
+<label class="btn btn-outline-secondary" for="input">choose Image to upload ! </label>
+
+<BlazorInputFile.InputFile id="input" style="display:none" OnChange="async(files)=>Analyze(files)">
+
+</BlazorInputFile.InputFile>
+
+<img class="d-block" src="data:image/jpg;base64,@base64image" />
+@if (imageAnalysis != null)
+{
+<div class="alert alert-info">
+<h4>Tags</h4>
+@foreach (var tag in imageAnalysis.Tags.OrderByDescending(t => t.Confidence))
+{
+<p class="d-block">@tag.Name @tag.Confidence</p>
+}
+<h2>@imageAnalysis.Description.Captions.First().Text</h2>
+</div>
+}
+
+@code
+{
+string base64image;
+MemoryStream memoryStream;
+ComputerVisionClient computerVisionClient;
+ImageAnalysis imageAnalysis;
+List<VisualFeatureTypes> features;protected override void OnInitialized()
+{
+	memoryStream = new MemoryStream();
+	computerVisionClient = new ComputerVisionClient(new ApiKeyServiceClientCredentials("983e87fb3abc4683b1906b4b72b59966"))
+		{
+			Endpoint = "https://compvisionmet.cognitiveservices.azure.com/"
+		};
+	features = new List<VisualFeatureTypes>()
+		{
+			VisualFeatureTypes.Tags,
+			VisualFeatureTypes.Description
+		};
+}
+public async Task Analyze(IFileListEntry[] files)
+{
+	memoryStream.Position = 0;
+	memoryStream.SetLength(0);
+	await files.First().Data.CopyToAsync(memoryStream);
+	base64image = Convert.ToBase64String(memoryStream.ToArray());
+	memoryStream.Position = 0;
+	imageAnalysis = await computerVisionClient.AnalyzeImageInStreamAsync(memoryStream, features.Cast<VisualFeatureTypes?>().ToList());
+	StateHasChanged();
+}
+}
